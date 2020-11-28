@@ -7,12 +7,13 @@ RUN apk add --update alpine-sdk clang git libssh-dev openssl openssh json-c-dev 
     && chmod 0777 ./bin/ssh-honeypot
 
 # ====== APP ======
-FROM nlss/base-alpine:3.12
+FROM alpine:3.12
 
 COPY --from=build /git-ssh-honeypot/bin/ssh-honeypot /bin/ssh-honeypot
+ARG UID=1000
 
 RUN apk add --update --no-cache libssh-dev json-c-dev openssh \
-    && adduser --shell /bin/false --disabled-password --gecos "Honeycomb" --home "/home/honeycomb" "honeycomb" \
+    && adduser --uid ${UID} --shell /bin/false --disabled-password --gecos "Honeycomb" --home "/home/honeycomb" "honeycomb" \
     && mkdir -p /home/honeycomb/{log,rsa}
 
 COPY ["./rootfs", "/"]
@@ -20,3 +21,5 @@ COPY ["./rootfs", "/"]
 VOLUME ["/home/honeycomb/log", "/home/honeycomb/rsa"]
 
 EXPOSE 2022/TCP
+
+ENTRYPOINT ["/entrypoint.sh"]
